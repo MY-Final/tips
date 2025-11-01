@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>💕</title>
 <style>
-  /* 基础样式保持不变 */
   body {
     margin: 0;
     padding: 0;
@@ -15,6 +14,17 @@
     background: linear-gradient(135deg, #dbeafe, #fce7f3);
     font-family: "Microsoft YaHei", sans-serif;
     position: relative;
+    transition: background 2s ease;
+  }
+
+  body.playing {
+    background: linear-gradient(135deg, #dbeafe, #fce7f3, #fde68a);
+    background-size: 200% 200%;
+    animation: bgPulse 8s ease infinite;
+  }
+  @keyframes bgPulse {
+    0%,100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
   }
 
   .message {
@@ -22,12 +32,12 @@
     border-radius: 14px;
     padding: 10px 16px;
     background: white;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
     font-size: 14px;
     text-align: center;
-    animation: fadeInUp 0.8s ease forwards;
     opacity: 0;
-    display: none; /* 初始隐藏，签收后显示 */
+    display: none;
+    animation-fill-mode: forwards;
   }
 
   .message::before {
@@ -38,9 +48,15 @@
     margin-bottom: 4px;
   }
 
-  @keyframes fadeInUp {
-    0% { opacity: 0; transform: translateY(10px) scale(0.9); }
-    100% { opacity: 1; transform: translateY(0) scale(1); }
+  @keyframes fadeInUp { 0%{opacity:0;transform:translateY(20px)scale(0.9);}100%{opacity:1;transform:translateY(0)scale(1);} }
+  @keyframes fadeInDown { 0%{opacity:0;transform:translateY(-30px)scale(0.9);}100%{opacity:1;transform:translateY(0)scale(1);} }
+  @keyframes fadeInLeft { 0%{opacity:0;transform:translateX(-40px)scale(0.9);}100%{opacity:1;transform:translateX(0)scale(1);} }
+  @keyframes fadeInRight { 0%{opacity:0;transform:translateX(40px)scale(0.9);}100%{opacity:1;transform:translateX(0)scale(1);} }
+  @keyframes zoomIn { 0%{opacity:0;transform:scale(0.5)rotate(-10deg);}80%{opacity:1;transform:scale(1.05)rotate(3deg);}100%{transform:scale(1)rotate(0);} }
+
+  @keyframes fadeOutSmooth {
+    0% { opacity: 1; transform: scale(1); }
+    100% { opacity: 0; transform: scale(0.9); }
   }
 
   .heart {
@@ -50,9 +66,8 @@
     opacity: 0.9;
     transform: translate(-50%, -50%);
     animation: appear 4s ease-out forwards;
-    display: none; /* 初始隐藏，签收后显示 */
+    display: none;
   }
-
   @keyframes appear {
     0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
     50% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
@@ -67,9 +82,9 @@
     font-size: 16px;
     color: white;
     cursor: pointer;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
     transition: all 0.3s ease;
-    display: none; /* 初始隐藏，签收后显示 */
+    display: none;
   }
 
   .refresh-btn {
@@ -77,11 +92,7 @@
     right: 20px;
     background: #f9a8d4;
   }
-
-  .refresh-btn:hover {
-    transform: scale(1.05);
-    background: #f472b6;
-  }
+  .refresh-btn:hover { transform: scale(1.05); background: #f472b6; }
 
   .audio-btn {
     bottom: 20px;
@@ -89,119 +100,118 @@
     background: #60a5fa;
     padding: 10px 14px;
   }
+  .audio-btn:hover { transform: scale(1.05); background: #3b82f6; }
 
-  .audio-btn:hover {
-    transform: scale(1.05);
-    background: #3b82f6;
-  }
-
-  /* 新增：礼物签收弹窗样式 */
   .gift-modal {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(255, 255, 255, 0.95);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(255,255,255,0.95);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
     z-index: 9999;
   }
+  .gift-icon { font-size: 60px; margin-bottom: 20px; animation: bounce 1.5s infinite; }
+  @keyframes bounce { 0%,100%{transform:scale(1);}50%{transform:scale(1.1);} }
+  .gift-text { font-size: 22px; color: #ff4b91; margin-bottom: 30px; text-align: center; padding: 0 20px; }
+  .gift-btn { background:#ff4b91; color:white; border:none; border-radius:30px; padding:12px 36px; font-size:18px; cursor:pointer; box-shadow:0 4px 15px rgba(255,75,145,0.3); transition:all 0.3s ease; }
+  .gift-btn:hover { background:#f43f86; transform:scale(1.05); }
 
-  .gift-icon {
-    font-size: 60px;
-    margin-bottom: 20px;
-    animation: bounce 1.5s infinite;
+  .fade-to-light {
+    position: fixed; inset: 0; background: white; opacity: 0;
+    animation: flash 1.5s ease; pointer-events: none; z-index: 9998;
+  }
+  @keyframes flash {
+    0% { opacity: 0; } 50% { opacity: 0.8; } 100% { opacity: 0; }
   }
 
-  @keyframes bounce {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.1); }
+  #mainMessage {
+    position: fixed; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 26px; color: #ff4b91;
+    opacity: 0;
+    text-shadow: 0 0 10px rgba(255,75,145,0.3);
+    transition: opacity 3s ease;
   }
 
-  .gift-text {
-    font-size: 22px;
-    color: #ff4b91;
-    margin-bottom: 30px;
-    text-align: center;
-    padding: 0 20px;
+  .petal {
+    position: fixed; top: -10px; color: #ffb6c1; font-size: 16px;
+    animation: fall 6s linear infinite; pointer-events: none;
   }
-
-  .gift-btn {
-    background: #ff4b91;
-    color: white;
-    border: none;
-    border-radius: 30px;
-    padding: 12px 36px;
-    font-size: 18px;
-    cursor: pointer;
-    box-shadow: 0 4px 15px rgba(255, 75, 145, 0.3);
-    transition: all 0.3s ease;
-  }
-
-  .gift-btn:hover {
-    background: #f43f86;
-    transform: scale(1.05);
+  @keyframes fall {
+    0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
   }
 </style>
 </head>
 <body>
-<!-- 1. 初始显示：礼物签收弹窗 -->
+
 <div class="gift-modal" id="giftModal">
   <div class="gift-icon">🎁</div>
   <div class="gift-text">你有一份暖心礼物需要签收，是否打开？</div>
   <button class="gift-btn" id="acceptGift">是的，签收礼物</button>
 </div>
 
-<!-- 2. 签收后显示：页面核心内容（初始隐藏） -->
+<div id="mainMessage">你值得被世界温柔以待 💖</div>
+
 <button class="refresh-btn" onclick="restartMessages()">🌸 换一批提示</button>
-<button class="audio-btn" id="audioToggle" aria-label="播放背景音乐" title="播放/暂停背景音乐">⏸️</button>
+<button class="audio-btn" id="audioToggle">⏸️</button>
 
 <script>
-  const messages = [
-    "愿你每天都被爱包围 💕","记得吃早餐哦 🍞","多喝热水，少熬夜 💧","你笑起来真好看 😄",
-    "做自己就很美 ✨","今天也要元气满满 ☀️","一切都会好起来 🌈","保持微笑 😊",
-    "你值得被温柔以待 🌷","生活会越来越甜 🍬","爱自己是终身浪漫的开始 💖",
-    "勇敢一点，没有过不去的坎 🌻","别太累，慢一点也没关系 💫","祝你每晚都好梦 💤",
-    "好运正在路上 🍀","要相信自己 🦋","你的努力终会发光 ✨","今天的你比昨天更棒 💪",
-    "温柔地对待世界 🌸","星光不问赶路人 🌠","可爱的人好运都不会太差 🍓",
-    "你已经很努力啦 ❤️","希望你每天都开开心心 😊","不开心也没关系，抱抱你 🤗",
-    "天冷多穿衣服 🧣","喝点热奶茶吧 ☕","被爱包围的感觉真好 💘",
-    "未来会有很多惊喜 ✨","别害怕，都会过去的 🌈","你是独一无二的 🌟",
-    "心怀浪漫，热爱生活 💞","相信奇迹吧 🌠","慢慢来，比较快 🐢",
-    "喜欢自己每一个样子 💋","爱会来的 💕","今天也要多夸夸自己 👑",
-    "把温柔留给值得的人 🌷","你值得更好的生活 🌻","天上有星星，人间有你 ✨",
-    "愿你被世界温柔以待 🌸","别担心，一切顺利 🍀","你闪闪发光的样子真迷人 💫",
-    "生活有点苦，但你是甜的 🍬","愿你心中有光 🌟","每一天都值得期待 🌈",
-    "世界会因为你更可爱 💖","放轻松，吸气呼气 🧘‍♀️","努力但别太紧绷 💪",
-    "晚风吹来温柔 🌙","你是人间宝藏 💎","明天会更好 🌞",
-    "不必完美，只需真实 ❤️","善良是你最好的样子 🌻","做个温柔且坚定的人 💕",
-    "保持热爱，奔赴山海 🌊","相信爱与美好 💞","别忘了喝水 💧",
-    "阳光在等你 ☀️","愿你所遇皆温柔 🌈","小幸运在路上 🍀",
-    "你本身就是光 🌟","微笑是一种魔法 😊","幸福其实很近 💖",
-    "所有温柔都在路上 🚗","你在努力的样子真好 💫","今天也要好心情 🎵",
-    "不管多远，我都祝你快乐 🌸","给自己一个大大的拥抱 🤗","要做自己的小太阳 ☀️",
-    "爱是一种能量 💓","越努力越幸运 🍀","别忘了生活的美好 🎈",
-    "你是宇宙送来的惊喜 ✨","温柔的人有好运 🌷","保持浪漫 💞",
-    "记得休息 🌙","一切刚刚好 ❤️","幸福会来的 🍰",
-    "爱在空气中飘荡 🌸","你值得世界上所有的美好 🌎","多笑笑，烦恼就跑掉 😆",
-    "你很好，不必改变 💖","放松心情，迎接新一天 🌞","记得多拍几张照片 📸",
-    "春天总会来的 🌷","请相信自己的光 💫","你比想象中更坚强 💪",
-    "我希望你每天都快乐 ❤️","风会吹来好运 🍃","你是被祝福的人 🌈",
-    "人生很短，别忘了开心 🌸","睡前原谅一切 💤","明天会更美好 ☀️",
-    "你值得拥有最好的 💖","笑一笑，没什么大不了 😄","今天也要好好生活 🌻",
-    "愿你平安喜乐 💕","谢谢你出现在这个世界上 🌏","保持可爱 💫"
-  ]; // 共99条
+  const messages = Array.from({ length: 150 }, (_, i) => [
+  "愿你每天都被爱包围 💕","今天也要对自己笑一笑 😊","希望你梦里有星光 ✨","你值得所有温柔 🌷",
+  "风会轻轻吹过，烦恼也会散去 🍃","你笑起来真好看 😄","爱自己是浪漫的开始 💖","世界偷偷在对你温柔 🌈",
+  "要多喝水哦 💧","阳光很好，你也很好 ☀️","星星会眨眼，你也要闪闪发光 ✨","慢一点没关系，风景都在等你 🌸",
+  "每一个今天都值得被珍惜 🍀","努力的人最温柔 🌻","晚风轻拂，心事都柔软了 🌙","温柔和浪漫都在路上 💫",
+  "天冷要记得加衣 🧣","被喜欢包围的你真可爱 🍓","好运在偷偷靠近 🍬","不开心就抱抱自己 🤗",
+  "做梦也要笑哦 💤","有光的地方就有希望 🌠","你已经很棒啦 💪","相信自己是最美的信仰 🌹",
+  "每一次努力都值得被记得 📖","你是独一无二的存在 💎","要学会温柔地生活 🌷","风吹过都在说你真好 💞",
+  "此刻的一切都刚刚好 🌤️","日子平淡也会有小惊喜 🌼","喜欢自己，是最温柔的勇气 💫","你是我眼里的星光 💫",
+  "山河远阔，人间值得 🌿","保持心里的那份柔软 🍯","今天也要对自己好一点 🍰","有人在默默祝福你 🌻",
+  "笑容是最美的装饰 😄","生活在继续，爱也在继续 💗","世界因你而变得可爱 🩷","温柔总会被温柔回应 🌸",
+  "有你，月亮都圆一点 🌕","风吹过发梢的样子真好看 🌬️","时间会温柔对待你 ⏳","心动永远不会迟到 💓",
+  "你是人间小甜味 🍓","愿你永远被爱包围 💞","云朵都在偷偷看你 ☁️","春天也比不上你的笑 🌼",
+  "你值得拥有一整个宇宙的温柔 🌌","没有人能取代你 🌻","温暖会慢慢靠近 🧸","请对自己温柔一点 💗",
+  "你的名字都带着光 🌠","今天也要元气满满 ☀️","记得给自己一个拥抱 🤍","有爱就不怕黑夜 🌙",
+  "幸福正在路上 🚗","你的一切都刚刚好 💫","世界在偷偷爱你 🌎","小确幸正向你跑来 🐾",
+  "雨后会有彩虹 🌈","愿你被这世界轻轻拥抱 🌸","笑容是最好的魔法 ✨","希望你每天都温暖 💕",
+  "风轻云淡，一切都好 🍃","爱意藏在每个平凡日子里 💌","生活在发光 💡","你在就很浪漫 💞",
+  "心软是温柔的力量 🌷","做自己的小太阳 ☀️","你的温柔让世界变甜 🍯","愿你心中有海，眼里有光 🌊",
+  "晚风和星星都在等你 🌟","每个平凡的今天都值得庆祝 🎉","你不必完美，也很美 🌸",
+  "温柔是你最美的模样 💗","所有美好都在悄悄靠近 🌻","要相信，好运会来 🍀","今天也被世界温柔对待吧 🌷",
+  "你是宇宙的小奇迹 🌌","每一天都值得被温柔相待 💖","遇见美好只是时间问题 ⏰","心动不需要理由 💞",
+  "你闪闪发光的样子真美 ✨","爱会治愈一切 💓","保持温柔也保持坚定 🌹","世界因为你更明亮 🌠",
+  "你是故事里最温柔的一句 💕","笑一笑，烦恼就会跑掉 😄","请相信温柔的力量 🌷","你的笑是心动的开始 💗",
+  "风里有故事，眼里有星辰 🌠","你就是最美的风景 💞","心怀浪漫，世界温柔 🌸",
+  "月亮今晚也在替我想你 🌙","喜欢是藏不住的小浪漫 💌","你的存在就是奇迹 💫","愿岁月温柔以待你 🍃",
+  "和煦的阳光会照进每个角落 🌤️","星星会记得你每一个心愿 ✨","你值得被偏爱 💗","幸福正在靠近你 🚶‍♀️",
+  "你比花更明媚 🌸","让温柔成为你的底色 🌷","笑容可以治愈一切 💕","风轻轻吹过你的名字 🍃",
+  "爱是世界最柔软的光 🌈","生活的糖藏在小惊喜里 🍬","你的眼神很温暖 🌟","希望你心里永远有光 💫",
+  "你温柔的样子胜过春天 💐","被爱是一种幸运，懂爱是一种温柔 💖","美好正在发生 🌻","风带来好运，花带来笑容 🌸",
+  "世界在偷偷给你奖励 🎁","你的心是星星做的 ✨","温柔比阳光更治愈 🌞","笑是你最好的魔法 💫",
+  "别忘了生活的小甜 🍯","今天也要好好吃饭 🍚","风都在替我拥抱你 🌬️","你是梦中最柔软的一页 📖",
+  "春风十里，不如你 🍃","有你在的地方都是晴天 ☀️","心里的小鹿今天也跳了 💞","愿你的世界永远亮晶晶 🌟",
+  "日子有光，心中有爱 💖","你是我眼里的浪漫 💗","星光落在你眼里真好看 🌠","被爱包围的你最温暖 💕",
+  "笑容会照亮世界 😄","请带着温柔去生活 🌷","你让世界更可爱 🌸","风起的时候要想我 🍃",
+  "希望今天也被幸福眷顾 🍀","云朵都想靠近你 ☁️","你的每一个瞬间都闪光 ✨","世界欠你一个温柔的拥抱 🤗",
+  "你是风，也是梦 🌬️","温暖藏在你眼里 💗","心里有光，脚下有路 🌟","日子因为你更甜了 🍯",
+  "愿星星守护你的梦 🌙","希望有花有光有你 🌸","你的笑是我见过最温柔的风景 💞","世界对你温柔点吧 💕",
+  "希望你永远被爱包围 💫","幸福藏在你不经意的笑里 🍓","每一个清晨都值得期待 🌤️","风会替我吻你 🍃",
+  "你是人间限量版 💖","笑一笑，宇宙都会为你闪烁 🌌","爱是无声的温柔 💓","愿一切美好都如期而至 🌈",
+  "你是风中的小浪漫 🌬️","眼里有星光，心中有爱 💞","温柔本身就是力量 🌸","今天的风很甜，好像在想你 💫",
+  "你是光的方向 🌠","岁月静好，有你就好 🍀","希望你的梦里全是好风景 🌙","世界因你而温柔 💕",
+  "笑是最温柔的语言 💗","愿每个清晨都为你亮起 ☀️","你值得被温柔以待 💖","所有的好梦都属于你 🌙",
+  "风吹花落，心也柔软 🌸","你的笑比春天还温柔 🌷","心里有爱，眼里有光 🌠","幸福在路上 🚗",
+  "请相信，美好总会来 💫","你是我写不完的浪漫句子 💞","愿你被这个世界轻轻拥抱 💕","星星为你闪烁 🌟",
+  "希望你此生都被温柔以待 🌸"
+][i % 150]);
 
-  const colors = ["#ffe4e6", "#e0f2fe", "#fef9c3", "#fce7f3", "#dcfce7"];
-  const modal = document.getElementById("giftModal");
-  const acceptBtn = document.getElementById("acceptGift");
-  let pageLoaded = false; // 标记页面是否已加载
+const colors = ["#ffe4e6","#e0f2fe","#fef9c3","#fce7f3","#dcfce7"];
+const modal = document.getElementById("giftModal");
+const acceptBtn = document.getElementById("acceptGift");
+let pageLoaded = false;
 
-  // 创建暖心提示（仅签收后执行）
-  function createMessage(text) {
+function createMessage(text, delay = 0) {
+  setTimeout(() => {
     const msg = document.createElement("div");
     msg.className = "message";
     msg.innerText = text;
@@ -210,105 +220,105 @@
     msg.style.left = `${x}px`;
     msg.style.top = `${y}px`;
     msg.style.background = colors[Math.floor(Math.random() * colors.length)];
-    msg.style.display = "block"; // 签收后显示
+    msg.style.display = "block";
+    const anims = ["fadeInUp","fadeInDown","fadeInLeft","fadeInRight","zoomIn"];
+    msg.style.animation = `${anims[Math.floor(Math.random()*anims.length)]} 0.7s ease forwards`;
     document.body.appendChild(msg);
+  }, delay);
+}
+
+function heartPath() {
+  if (!pageLoaded) return;
+  const centerX = window.innerWidth / 2;
+  const centerY = window.innerHeight / 2;
+  const scale = Math.min(window.innerWidth, window.innerHeight) / 50;
+  const points = [];
+  for (let t = 0; t < Math.PI * 2; t += 0.08) { // 步长加大，绘制更快
+    const x = centerX + scale * 16 * Math.pow(Math.sin(t), 3);
+    const y = centerY - scale * (
+      13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t)
+    );
+    points.push({x, y});
   }
+  points.forEach((p, i) => setTimeout(() => {
+    const h = document.createElement("div");
+    h.className = "heart";
+    h.innerText = "❤️";
+    h.style.left = p.x + "px";
+    h.style.top = p.y + "px";
+    h.style.display = "block";
+    document.body.appendChild(h);
+    setTimeout(()=>h.remove(),4000);
+  }, i * 15)); // 延迟缩短，画心更快
+  setTimeout(showMessages, 1000); // 画完爱心后快速出现气泡
+}
 
-  // 创建爱心（仅签收后执行）
-  function createHeart(x, y, delay = 0) {
-    const heart = document.createElement("div");
-    heart.className = "heart";
-    heart.innerText = "❤️";
-    heart.style.left = `${x}px`;
-    heart.style.top = `${y}px`;
-    heart.style.animationDelay = `${delay}s`;
-    heart.style.display = "block"; // 签收后显示
-    document.body.appendChild(heart);
-    setTimeout(() => heart.remove(), 4000 + delay * 1000);
+
+function showMessages() {
+  if (!pageLoaded) return;
+  for (let i=0;i<52;i++){
+    const msgText = messages[i % messages.length];
+    createMessage(msgText, i * 120);
   }
+  const totalDelay = 52 * 120 + 2000;
+  setTimeout(finalScene, totalDelay);
+}
 
-  // 生成爱心路径并显示提示（仅签收后执行）
-  function heartPath() {
-    if (!pageLoaded) return;
-    const centerX = window.innerWidth / 2;
-    const centerY = window.innerHeight / 2;
-    const scale = Math.min(window.innerWidth, window.innerHeight) / 50;
+function startPetals() {
+  const petals = ["🌸","💮","🌷","🌺"];
+  setInterval(() => {
+    const petal = document.createElement("div");
+    petal.className = "petal";
+    petal.innerText = petals[Math.floor(Math.random()*petals.length)];
+    petal.style.left = Math.random() * 100 + "vw";
+    petal.style.fontSize = 14 + Math.random()*10 + "px";
+    petal.style.animationDuration = 5 + Math.random()*4 + "s";
+    document.body.appendChild(petal);
+    setTimeout(()=>petal.remove(),9000);
+  },300);
+}
 
-    const points = [];
-    for (let t = 0; t < Math.PI * 2; t += 0.04) {
-      const x = centerX + scale * 16 * Math.pow(Math.sin(t), 3);
-      const y = centerY - scale * (
-        13 * Math.cos(t) -
-        5 * Math.cos(2 * t) -
-        2 * Math.cos(3 * t) -
-        Math.cos(4 * t)
-      );
-      points.push({ x, y });
-    }
+acceptBtn.addEventListener("click", function() {
+  modal.style.display = "none";
+  document.querySelector(".refresh-btn").style.display = "block";
+  document.querySelector(".audio-btn").style.display = "block";
+  pageLoaded = true;
+  const flash = document.createElement("div");
+  flash.className = "fade-to-light";
+  document.body.appendChild(flash);
+  setTimeout(()=>flash.remove(),1500);
+  initAudio();
+  heartPath();
+  startPetals();
+});
 
-    points.forEach((p, i) => setTimeout(() => createHeart(p.x, p.y), i * 40));
-    setTimeout(showMessages, points.length * 40 + 1500);
-  }
+function initAudio() {
+  const audio = new Audio("music/女孩DJ-小九儿%232pofE9.mp3");
+  const btn = document.getElementById("audioToggle");
+  audio.loop = true; audio.volume = 0.6;
+  audio.play().catch(e=>console.log("音乐播放失败:", e));
+  btn.addEventListener("click",()=>{audio.paused?audio.play():audio.pause();});
+}
 
-  // 显示所有暖心提示（仅签收后执行）
-  function showMessages() {
-    if (!pageLoaded) return;
-    messages.forEach((text, i) => {
-      setTimeout(() => createMessage(text), 250 * i);
-    });
-  }
+/* --- 最终动画：气泡逐个柔和淡出 --- */
+function finalScene() {
+  const main = document.getElementById("mainMessage");
+  const msgs = document.querySelectorAll(".message");
 
-  // 刷新提示（仅签收后可用）
-  function restartMessages() {
-    if (!pageLoaded) return;
-    document.querySelectorAll(".message").forEach(m => m.remove());
-    showMessages();
-  }
-
-  // 核心：签收按钮点击事件（触发音乐+显示页面）
-  acceptBtn.addEventListener("click", function() {
-    // 1. 隐藏签收弹窗
-    modal.style.display = "none";
-    // 2. 显示页面功能按钮
-    document.querySelector(".refresh-btn").style.display = "block";
-    document.querySelector(".audio-btn").style.display = "block";
-    // 3. 标记页面加载完成
-    pageLoaded = true;
-    // 4. 启动背景音乐（此时有用户点击，浏览器允许播放）
-    initAudio();
-    // 5. 加载爱心动画和暖心提示
-    heartPath();
+  msgs.forEach((msg, i) => {
+    setTimeout(() => {
+      msg.style.animation = "fadeOutSmooth 1.2s ease forwards";
+    }, i * 80);
   });
 
-  // 背景音乐初始化（仅签收后执行）
-  function initAudio() {
-    const audioSrc = "music/女孩DJ-小九儿%232pofE9.mp3";
-    const audio = new Audio(audioSrc);
-    const btn = document.getElementById("audioToggle");
-    
-    audio.loop = true;
-    audio.preload = "auto";
-    audio.volume = 0.6;
-    audio.play().catch(err => {
-      console.error("音乐播放失败：", err);
-      alert("音频无法播放，可能是路径错误");
-    });
+  setTimeout(() => {
+    msgs.forEach(m => m.remove());
+    main.innerText = "愿你永远被爱包围 💕";
+    main.style.opacity = 1;
+  }, msgs.length * 80 + 2000);
+}
 
-    // 音频按钮控制
-    btn.addEventListener("click", function() {
-      if (audio.paused) {
-        audio.play();
-        btn.innerText = "⏸️";
-      } else {
-        audio.pause();
-        btn.innerText = "🔈";
-      }
-    });
-
-    // 同步按钮状态
-    audio.addEventListener("play", () => btn.innerText = "⏸️");
-    audio.addEventListener("pause", () => btn.innerText = "🔈");
-  }
 </script>
+
 </body>
 </html>
